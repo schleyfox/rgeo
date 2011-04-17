@@ -597,6 +597,22 @@ static VALUE method_geometry_sym_difference(VALUE self, VALUE rhs)
   return result;
 }
 
+static VALUE method_geometry_polygonize(VALUE self)
+{
+  VALUE result = Qnil;
+  RGeo_GeometryData* self_data = RGEO_GEOMETRY_DATA_PTR(self);
+  const GEOSGeometry* self_geom = self_data->geom;
+  if(self_geom) {
+    GEOSGeometry const *vgeoms[1];
+    GEOSContextHandle_t geos_context = self_data->geos_context;
+    GEOSGeometry *geos_result;
+    vgeoms[0] = self_geom;
+
+    geos_result = GEOSPolygonize_r(geos_context, vgeoms, 1);
+    result = rgeo_wrap_geos_geometry(self_data->factory, geos_result, Qnil);
+  }
+  return result;
+}
 
 static VALUE alloc_geometry(VALUE klass)
 {
@@ -680,6 +696,7 @@ void rgeo_init_geos_geometry(RGeo_Globals* globals)
   rb_define_method(geos_geometry_class, "difference", method_geometry_difference, 1);
   rb_define_method(geos_geometry_class, "-", method_geometry_difference, 1);
   rb_define_method(geos_geometry_class, "sym_difference", method_geometry_sym_difference, 1);
+  rb_define_method(geos_geometry_class, "polygonize", method_geometry_polygonize, 0);
 }
 
 
